@@ -53,7 +53,7 @@ def main(
         if extra_lbw:
             for extra in extra_lbw:
                 print('output_file_path',output_file_path)
-                extra_data = pd.read_csv(              #读取已存在的两个文件夹的数据
+                extra_data = pd.read_csv(              #Read the data of two existing folders
                     output_file_path.replace(
                         f"quandl_cpd_{lookback_window_length}lbw.csv",
                         f"quandl_cpd_{extra}lbw.csv",

@@ -56,23 +56,22 @@ def get_data(price_or_return='return',multi_features=True,scaler_method=None):
     # test_data=test_data[['close_price','low_price', 'RSI_14', 'high_low_diff', 'trend_last_7', 'trend_last_21','macd_7_21']]
     test_data=test_data[-100:]
     if multi_features==True:
-        # train_data=train_data[21:] # Todo 选择具体变量
+        # train_data=train_data[21:] # 21 is because the first 21 rows have missing values in XTAO.pickle(Enric's dataset)
         # test_data=test_data[21:]
         if price_or_return=='return':
-            cols = train_data.columns.tolist() # 获取列名列表
-            cols = cols[-1:] + cols[:-1] # 将最后一列移到第一列
-            train_data = train_data[cols][1:] # 重新排列 DataFrame 的列
+            cols = train_data.columns.tolist() # get all the columns' names
+            cols = cols[-1:] + cols[:-1] #  move the last column to first
+            train_data = train_data[cols][1:] # re-order the columns of dataframe
             
-            cols = test_data.columns.tolist() # 获取列名列表 
-            cols = cols[-1:] + cols[:-1] # 将最后一列移到第一列
-            test_data = test_data[cols][1:] # 重新排列 DataFrame 的列
+            cols = test_data.columns.tolist() 
+            cols = cols[-1:] + cols[:-1] 
+            test_data = test_data[cols][1:] 
         else:
             pass  
     else:
         if  price_or_return=='return':
             train_data=train_data['close_returns'][1:].to_frame()
-            test_data=test_data['close_returns'][1:].to_frame() #series 变成 dataframe
-        else:
+            test_data=test_data['close_returns'][1:].to_frame() #change series to dataframe
             train_data=train_data['close'].to_frame()
             test_data=test_data['close'].to_frame()
 
@@ -110,13 +109,13 @@ def get_data(price_or_return='return',multi_features=True,scaler_method=None):
     '''
     # shape with (block , sql_len , 2 )
     return train_sequence.to(device),test_data.to(device)
-def create_inout_sequences(input_data, tw):# train data 和 look back window
+def create_inout_sequences(input_data, tw):# train data and look back window
     inout_seq = []
     L = len(input_data)
     # if window is 100 and prediction step is 1
     # in -> [0..99]
     # target -> [1..100]
-    for i in range(L - tw): #L - tw 是 sequence 的数量 L is the length of input_data, tw is the length of train_seq
+    for i in range(L - tw): #L - tw is the lenghth of sequence, L is the length of input_data, tw is the length of train_seq
         train_seq = input_data[i:i + tw] # train_seq is the input of the model
         train_label = input_data[i + output_window:i + tw + output_window] # train_label is the output of the model
         inout_seq.append((train_seq, train_label)) # inout_seq is a list of tuples, each tuple contains a train_seq and a train_label
@@ -128,8 +127,7 @@ def get_batch(input_data, i , batch_size):
     # batch_len = min(batch_size, len(input_data) - 1 - i) #  # Now len-1 is not necessary
     batch_len = min(batch_size, len(input_data) - i)
     data = input_data[ i:i + batch_len ]
-    input = torch.stack([item[0] for item in data]).view((input_window,batch_len,data.shape[-1])) #data.shape[-1] 获取列数，即变量个数，这里把data[64.2,14,4] 变为 3 维[14,64,4]
-    # ( seq_len, batch, 1 ) , 1 is feature size
+    input = torch.stack([item[0] for item in data]).view((input_window,batch_len,data.shape[-1])) #data.shape[-1] get the number of columns，That is, the number of variables, here change data[64,2,14,4] into 3-dimensional [14,64,4] # ( seq_len, batch, 1 ) , 1 is feature size
     target = torch.stack([item[1] for item in data]).view((input_window,batch_len,data.shape[-1]))
     return input, target
 class PositionalEncoding(nn.Module):
@@ -149,15 +147,11 @@ class PositionalEncoding(nn.Module):
         #pe.requires_grad = False
         self.register_buffer('pe', pe)
 
-    def forward(self, x): #x 来自于哪里
+    def forward(self, x): 
         # print(self.pe[:x.size(0), :].repeat(1,x.shape[1],1).shape ,'---',x.shape)
         # dimension 1 maybe inequal batchsize
         return x + self.pe[:x.size(0), :].repeat(1,x.shape[1],1) 
-        #这行代码是对输入张量 x 和位置编码张量 pe 进行相加操作，其中 x 是一个形状为 (seq_len, batch_size, embedding_size) 的三维张量，pe 是一个形状为 (seq_len, 1, embedding_size) 的三维张量。
-        # x: [14,64,250] x 本来是[14,64,4] 为什么最后一维变成了 250， self.input_embedding  = nn.Linear(4,feature_size) 这一行 代码将 4 维转换成了 250 维, 原来每个数据有 4 个特征，但每个数据点现在有 250 个特征。因此，转换后的张量仍然代表相同的数据集，但是在每个数据点上提供了更多的特征信息。
-        # pe [5000,1,250]
-        #pe[:x.size(0), :] [14,1,250]
-        #然后使用 .repeat(1, x.shape[1], 1) 将其沿着第二维（即 batch_size）重复 batch_size 次，并沿着第三维（即 embedding_size）重复 1 次，以便与 x 的形状相匹配。最后，我们将这两个张量相加得到一个形状与 x 相同的张量，其中每个位置都加上了对应位置的位置编码。
+        #This line of code is to add the input tensor x and the position encoding tensor pe, where x is a three-dimensional tensor of shape (seq_len, batch_size, embedding_size), and pe is a shape of (seq_len, 1, embedding_size ) of three-dimensional tensors. # x: [14,64,250] x was originally [14,64,4] Why does the last dimension become 250, self.input_embedding = nn.Linear(4,feature_size) This line of code converts 4 dimensions into 250 dimensions , which originally had 4 features per data point, but now has 250 features per data point. Therefore, the transformed tensor still represents the same dataset, but provides more feature information at each data point. # pe [5000,1,250] #pe[:x. size(0), :] [14,1,250] #Then use .repeat(1, x.shape[1], 1) to repeat it batch_size times along the second dimension (ie batch_size) and 1 time along the third dimension (ie embedding_size) to match the shape of x match. Finally, we add these two tensors to get a tensor with the same shape as x, where each position is encoded with the position of the corresponding position.
 
 class TransAm(nn.Module):
     def __init__(self,feature_size=250,feature_num=1,num_layers=2,dropout=0.07512419176125458):
@@ -169,7 +163,7 @@ class TransAm(nn.Module):
         self.pos_encoder = PositionalEncoding(feature_size)
         self.encoder_layer = nn.TransformerEncoderLayer(d_model=feature_size, nhead=10, dropout=dropout)
         self.transformer_encoder = nn.TransformerEncoder(self.encoder_layer, num_layers=num_layers)
-        self.decoder = nn.Linear(feature_size,feature_num) #表示创建一个具有 feature_size 个输入特征和 4 个输出特征的全连接层。
+        self.decoder = nn.Linear(feature_size,feature_num)
         self.init_weights()
 
     def init_weights(self):
@@ -269,7 +263,7 @@ def plot_and_loss(eval_model, data_source,epoch):
             truth = torch.cat((truth, target[-1].cpu()), 0)
             
     #test_result = test_result.cpu().numpy() -> no need to detach stuff.. 
-    test_result=scaler.inverse_transform(test_result.reshape(-1, feature_num_from_data)) #test 为矩阵
+    test_result=scaler.inverse_transform(test_result.reshape(-1, feature_num_from_data)) #test is a matrix
     # test_result=scaler.inverse_transform(test_result).reshape(-1)
 
     truth=scaler.inverse_transform(truth.reshape(-1, feature_num_from_data))
@@ -337,7 +331,7 @@ def evaluate(eval_model, data_source):
     return total_loss / len(data_source)
 
 if __name__=='__main__':
-    #设置超参数
+    #set hyper-parameters
     input_window = 30# number of input steps
     output_window = 1 # number of prediction steps, in this model its fixed to one
     lr =  7.899704204671948e-05 #学习率是一个非常重要的超参数，它决定了每次参数更新的幅度。如果学习率设置过大，可能会导致模型无法收敛，损失函数不断波动或发生不稳定的震荡；如果学习率设置过小，则会导致模型收敛速度慢，需要更长的时间才能达到最优解。 

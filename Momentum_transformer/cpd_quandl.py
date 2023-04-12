@@ -31,7 +31,7 @@ if __name__ == "__main__":
 
         parser = argparse.ArgumentParser(description="Run changepoint detection module")
         parser.add_argument(
-            "ticker", #某种币
+            "ticker", #coin symbol
             metavar="t",
             type=str,
             # nargs="?",

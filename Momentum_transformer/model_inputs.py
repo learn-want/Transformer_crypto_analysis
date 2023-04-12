@@ -262,7 +262,6 @@ class ModelFeatures:
                 for t in tickers
             ]
         )
-        # test_with_buffer.to_csv('/home/tao/transformer/resive_trading-momentum-transformer/examples/test_with_buffer_one.csv')
         # to deal with case where fixed window did not have a full sequence
         if lags:
             for t in tickers:
@@ -282,7 +281,6 @@ class ModelFeatures:
             self.transform_inputs(data)
             for data in [train, valid, test, test_with_buffer]
         ]
-        # test_with_buffer.to_csv('/home/tao/transformer/resive_trading-momentum-transformer/examples/test_with_buffer_4.csv')
         if lags:
             self.train = self._batch_data_smaller_output(
                 train, train_valid_sliding, self.lags
@@ -527,7 +525,6 @@ class ModelFeatures:
                         data_map[k] = [arr]
                     else:
                         data_map[k].append(arr)
-            # pd.DataFrame(data_map).to_csv('/home/tao/transformer/resive_trading-momentum-transformer/examples/data_map.csv',index=None)
             # Combine all data
             for k in data_map:
                 data_map[k] = np.concatenate(data_map[k], axis=0)

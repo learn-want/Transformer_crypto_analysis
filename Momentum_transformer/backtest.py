@@ -397,7 +397,7 @@ def run_single_window(
 
     # TODO more/less than the one year test buffer
     model_features = ModelFeatures(
-        raw_data, #各种 return数据
+        raw_data, #different kinds of return data
         params["total_time_steps"],
         start_boundary=train_interval[0],
         test_boundary=train_interval[1],

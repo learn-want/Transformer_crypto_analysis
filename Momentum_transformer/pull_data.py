@@ -13,7 +13,7 @@ def pull_quandl_sample_data(ticker: str) -> pd.DataFrame:
         pd.read_csv(os.path.join("/home/tao/transformer/resive_trading-momentum-transformer/data", "quandl", f"{ticker}.csv"), parse_dates=[0])
         .rename(columns={"open_time": "date"})
         .set_index("date")
-        .replace(0.0, np.nan) #用空值替换 0
+        .replace(0.0, np.nan) #replace 0 with null value
     )
 
 

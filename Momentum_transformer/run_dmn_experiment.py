@@ -121,7 +121,7 @@ def main(
         if changepoint_lbws:
             features_file_path = os.path.join(
                 "/home/tao/transformer/resive_trading-momentum-transformer/data",
-                f"quandl_cpd_{np.max(changepoint_lbws)}lbw.csv", #创建带有多个 cp 的 feature 时候，需要把大的数字放在前面
+                f"quandl_cpd_{np.max(changepoint_lbws)}lbw.csv", #When creating a feature with multiple cp, you need to put the big number in front
             )
         else:
             features_file_path = os.path.join(
@@ -137,7 +137,7 @@ def main(
             changepoint_lbws,
             ASSET_CLASS_MAPPING,
             [32, 64, 128] if lstm_time_steps == 252 else HP_MINIBATCH_SIZE,#HP_MINIBATCH_SIZE= [64, 128, 256]
-            test_window_size, #测试年份间隔的长度，在命令行输入，默认为 1 年
+            test_window_size, #Test the length of the year interval, enter it on the command line, the default is 1 year
         )
 
 

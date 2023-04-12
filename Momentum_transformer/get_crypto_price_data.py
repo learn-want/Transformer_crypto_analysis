@@ -21,9 +21,9 @@ def get_history_data(coin,start_time=None,end_time=None):
     BASE_URL = 'https://api.binance.com'
     limit = 1000
     for time_level in ['1d','1h','1m']: 
-        end_time = 1674553742000 # 乘1000是转换成微秒，1秒等于1000微秒。Date and time (GMT): Saturday, 1 January 2022 00:00:00     #end_time=int(time.time() // 60 * 60 * 1000)    
+        end_time = 1674553742000 # timestamp*1000,because timestamp use second and Binance use mircoseconds，1s=1000ms。Date and time (GMT): Saturday, 1 January 2022 00:00:00     #end_time=int(time.time() // 60 * 60 * 1000)    
         if  time_level=='1d' :
-              start_time = int(end_time - limit*24*60*60*1000) #获取的数据会早于瑞士时间一小时
+              start_time = int(end_time - limit*24*60*60*1000) 
         elif  time_level=='1h' :
               start_time = int(end_time - limit*60*60*1000)
         else:               
